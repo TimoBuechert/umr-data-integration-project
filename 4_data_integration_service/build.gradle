@@ -17,6 +17,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.projectlombok:lombok:1.18.26'
     implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'com.github.mpkorstanje:simmetrics-core:4.1.1'
+    implementation 'org.apache.lucene:lucene-spatial:8.4.1'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'

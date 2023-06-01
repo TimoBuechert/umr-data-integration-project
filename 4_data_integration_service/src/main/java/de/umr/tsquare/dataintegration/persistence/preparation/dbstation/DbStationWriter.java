@@ -1,4 +1,4 @@
-package de.umr.tsquare.dataintegration.persistence.rmvstation;
+package de.umr.tsquare.dataintegration.persistence.preparation.dbstation;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class RmvStationWriter implements ItemWriter<RmvStationEntity> {
+public class DbStationWriter implements ItemWriter<DbStationEntity> {
 
-    private RmvStationRepository rmvStationRepository;
+    private DbStationRepository dbStationRepository;
 
     @Override
-    public void write(Chunk<? extends RmvStationEntity> chunk) {
-        rmvStationRepository.saveAll(chunk.getItems());
+    public void write(Chunk<? extends DbStationEntity> chunk) {
+        dbStationRepository.saveAll(chunk.getItems());
         log.info("Saved {} entities to database", chunk.size());
     }
 }

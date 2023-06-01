@@ -1,5 +1,8 @@
 package de.umr.tsquare.dataintegration.persistence.dbstation;
 
+import de.umr.tsquare.dataintegration.persistence.preparation.dbstation.DbStationEntity;
+import de.umr.tsquare.dataintegration.persistence.preparation.dbstation.DbStationRepository;
+import de.umr.tsquare.dataintegration.persistence.preparation.dbstation.DbStationWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

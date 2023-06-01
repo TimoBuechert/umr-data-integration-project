@@ -1,4 +1,4 @@
-package de.umr.tsquare.dataintegration.persistence.dbstation;
+package de.umr.tsquare.dataintegration.persistence.preparation.dbstation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package de.umr.tsquare.dataintegration.persistence.rmvstation;
+package de.umr.tsquare.dataintegration.persistence.preparation.rmvstation;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
