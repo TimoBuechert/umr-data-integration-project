@@ -1,7 +1,6 @@
 package de.umr.tsquare.dataintegration.process;
 
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
-import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.transferoption.IntegratedTransferOptionEntity;
