@@ -7,7 +7,4 @@ import java.util.List;
 
 @Repository
 public interface IntegratedDbStationRepository extends JpaRepository<IntegratedDbStationEntity, String> {
-
-    List<IntegratedDbStationEntity> findByCityName(String cityName);
-
 }

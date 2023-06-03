@@ -3,6 +3,7 @@ package de.umr.tsquare.dataintegration.process;
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
+import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.transferoption.IntegratedTransferOptionEntity;
 import lombok.AllArgsConstructor;
 import org.apache.lucene.util.SloppyMath;
@@ -12,20 +13,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class IntegratedTransferOptionProcessor implements ItemProcessor<IntegratedRmvStationEntity, List<IntegratedTransferOptionEntity>> {
+public class IntegratedTransferOptionProcessor implements ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> {
 
-    private IntegratedDbStationRepository integratedDbStationRepository;
+    private IntegratedRmvStationRepository integratedRmvStationRepository;
 
     private int distanceThresholdInMeters;
 
     @Override
-    public List<IntegratedTransferOptionEntity> process(final IntegratedRmvStationEntity rmvStation) {
-        final List<IntegratedDbStationEntity> possibleDbStations =
-                integratedDbStationRepository.findByCityName(rmvStation.getCityName());
+    public List<IntegratedTransferOptionEntity> process(final IntegratedDbStationEntity dbStation) {
+        final List<IntegratedRmvStationEntity> possibleRmvStations =
+                integratedRmvStationRepository.findByCityName(dbStation.getCityName());
 
-        return possibleDbStations.stream()
-                .filter(dbStation -> getDistanceInMeters(dbStation, rmvStation) < distanceThresholdInMeters)
-                .map(dbStation -> createTransferOptionEntity(dbStation, rmvStation))
+        return possibleRmvStations.stream()
+                .filter(rmvStation -> getDistanceInMeters(dbStation, rmvStation) < distanceThresholdInMeters)
+                .map(rmvStation -> createTransferOptionEntity(dbStation, rmvStation))
                 .collect(Collectors.toList());
     }
 

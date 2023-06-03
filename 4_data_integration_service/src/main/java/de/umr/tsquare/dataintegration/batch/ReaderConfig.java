@@ -1,5 +1,7 @@
 package de.umr.tsquare.dataintegration.batch;
 
+import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
+import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationRepository;
 import de.umr.tsquare.dataintegration.persistence.preparation.dbstation.DbStationEntity;
@@ -66,6 +68,17 @@ public class ReaderConfig {
                 .sorts(Map.of("stationId", Sort.Direction.ASC))
                 .repository(repository)
                 .name("integratedRmvReader")
+                .build();
+    }
+
+    @Bean
+    public RepositoryItemReader<IntegratedDbStationEntity> integratedDbReader(final IntegratedDbStationRepository repository) {
+        return new RepositoryItemReaderBuilder<IntegratedDbStationEntity>()
+                .methodName("findAll")
+                .pageSize(100)
+                .sorts(Map.of("stationId", Sort.Direction.ASC))
+                .repository(repository)
+                .name("integratedDbReader")
                 .build();
     }
 

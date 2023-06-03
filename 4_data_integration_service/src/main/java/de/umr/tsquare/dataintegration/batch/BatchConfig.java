@@ -77,13 +77,12 @@ public class BatchConfig {
                 .end()
                 .build();
     }
-
     @Bean
     public Flow createTransferOptionFlow() {
         return new FlowBuilder<SimpleFlow>("createTransferOptionFlow")
                 .start(new StepBuilder("createTransferOptionStep", jobRepository)
-                        .<IntegratedRmvStationEntity, List<IntegratedTransferOptionEntity>>chunk(config.getChunkSize(), transactionManager)
-                        .reader(readerConfig.integratedRmvReader(integratedRmvStationRepository))
+                        .<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>>chunk(config.getChunkSize(), transactionManager)
+                        .reader(readerConfig.integratedDbReader(integratedDbStationRepository))
                         .processor(integratedTransferOptionProcessor())
                         .writer(integratedTransferOptionWriter)
                         .build())
@@ -170,8 +169,8 @@ public class BatchConfig {
     }
 
     @Bean
-    public ItemProcessor<IntegratedRmvStationEntity, List<IntegratedTransferOptionEntity>> integratedTransferOptionProcessor() {
-        return new IntegratedTransferOptionProcessor(integratedDbStationRepository, config.getThresholdMeters());
+    public ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> integratedTransferOptionProcessor() {
+        return new IntegratedTransferOptionProcessor(integratedRmvStationRepository, config.getThresholdMeters());
     }
 
 
