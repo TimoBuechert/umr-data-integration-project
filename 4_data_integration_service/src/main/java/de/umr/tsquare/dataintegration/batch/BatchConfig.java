@@ -170,7 +170,7 @@ public class BatchConfig {
 
     @Bean
     public ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> integratedTransferOptionProcessor() {
-        return new IntegratedTransferOptionProcessor(integratedRmvStationRepository, config.getThresholdMeters());
+        return new IntegratedTransferOptionProcessor(integratedRmvStationRepository, config.getThresholdMeters(), config.getEqualityThresholdMeters(), config.getEqualityLevenshteinDistanceThreshold());
     }
 
 

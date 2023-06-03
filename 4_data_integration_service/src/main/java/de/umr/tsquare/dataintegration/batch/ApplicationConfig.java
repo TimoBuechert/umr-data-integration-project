@@ -14,4 +14,10 @@ public class ApplicationConfig {
     @Value("${integration.distance.threshold.meters}")
     private int thresholdMeters;
 
+    @Value("${integration.equality.threshold.meters}")
+    private int equalityThresholdMeters;
+
+    @Value("${integration.equality.threshold.levenshtein}")
+    private int equalityLevenshteinDistanceThreshold;
+
 }

@@ -8,8 +8,12 @@ import lombok.AllArgsConstructor;
 import org.apache.lucene.util.SloppyMath;
 import org.springframework.batch.item.ItemProcessor;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static de.umr.tsquare.dataintegration.util.StringUtil.calculateLevenshteinStationDistance;
+import static de.umr.tsquare.dataintegration.util.StringUtil.removeCharsBetweenBrackets;
 
 @AllArgsConstructor
 public class IntegratedTransferOptionProcessor implements ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> {
@@ -18,15 +22,49 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
 
     private int distanceThresholdInMeters;
 
+    private int equalityDistanceThresholdInMeters;
+
+    private int levenshteinDistanceThreshold;
+
     @Override
     public List<IntegratedTransferOptionEntity> process(final IntegratedDbStationEntity dbStation) {
         final List<IntegratedRmvStationEntity> possibleRmvStations =
                 integratedRmvStationRepository.findByCityName(dbStation.getCityName());
 
-        return possibleRmvStations.stream()
+        List<IntegratedTransferOptionEntity> transferOptions = possibleRmvStations.stream()
                 .filter(rmvStation -> getDistanceInMeters(dbStation, rmvStation) < distanceThresholdInMeters)
                 .map(rmvStation -> createTransferOptionEntity(dbStation, rmvStation))
                 .collect(Collectors.toList());
+
+        markSameStationTransfers(transferOptions);
+        markBestTransferOption(transferOptions);
+        return transferOptions;
+    }
+
+    private void markBestTransferOption(List<IntegratedTransferOptionEntity> transferOptions) {
+        transferOptions.stream().filter(it -> !it.isIdenticalStations())
+                .min(Comparator.comparing(IntegratedTransferOptionEntity::getDistance))
+                .ifPresent(it -> it.setBestTransferOption(true));
+    }
+
+    private void markSameStationTransfers(List<IntegratedTransferOptionEntity> transferOptions) {
+        transferOptions.stream()
+                .filter(this::isEqualStationTransferCandidate)
+                .min(Comparator.comparing(it ->
+                    calculateLevenshteinStationDistance(
+                            it.getDbStation().getStationName(),
+                            it.getRmvStation().getStationNameLong()
+                    )
+                ))
+                .ifPresent(it -> it.setIdenticalStations(true));
+    }
+
+    private boolean isEqualStationTransferCandidate(IntegratedTransferOptionEntity transferOption) {
+        return transferOption.getDistance() < equalityDistanceThresholdInMeters && (
+                calculateLevenshteinStationDistance(
+                        removeCharsBetweenBrackets(transferOption.getDbStation().getStationName()),
+                        removeCharsBetweenBrackets(transferOption.getRmvStation().getStationNameLong())
+                ) < levenshteinDistanceThreshold);
     }
 
     private static double getDistanceInMeters(IntegratedDbStationEntity dbStation, IntegratedRmvStationEntity rmvStation) {
