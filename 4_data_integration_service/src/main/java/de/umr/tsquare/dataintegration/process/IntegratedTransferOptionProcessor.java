@@ -1,10 +1,11 @@
 package de.umr.tsquare.dataintegration.process;
 
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
+import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.transferoption.IntegratedTransferOptionEntity;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.lucene.util.SloppyMath;
 import org.springframework.batch.item.ItemProcessor;
 
@@ -15,21 +16,22 @@ import java.util.stream.Collectors;
 import static de.umr.tsquare.dataintegration.util.StringUtil.calculateLevenshteinStationDistance;
 import static de.umr.tsquare.dataintegration.util.StringUtil.removeCharsBetweenBrackets;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class IntegratedTransferOptionProcessor implements ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> {
+    private final IntegratedRmvStationRepository integratedRmvStationRepository;
 
-    private IntegratedRmvStationRepository integratedRmvStationRepository;
+    private final int distanceThresholdInMeters;
 
-    private int distanceThresholdInMeters;
+    private final int equalityDistanceThresholdInMeters;
 
-    private int equalityDistanceThresholdInMeters;
+    private final int levenshteinDistanceThreshold;
 
-    private int levenshteinDistanceThreshold;
+    private List<IntegratedRmvStationEntity> integratedRmvStations;
 
     @Override
     public List<IntegratedTransferOptionEntity> process(final IntegratedDbStationEntity dbStation) {
         final List<IntegratedRmvStationEntity> possibleRmvStations =
-                integratedRmvStationRepository.findByCityName(dbStation.getCityName());
+                findRmvStationByCityName(dbStation.getCityName());
 
         List<IntegratedTransferOptionEntity> transferOptions = possibleRmvStations.stream()
                 .filter(rmvStation -> getDistanceInMeters(dbStation, rmvStation) < distanceThresholdInMeters)
@@ -39,6 +41,15 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
         markSameStationTransfers(transferOptions);
         markBestTransferOption(transferOptions);
         return transferOptions;
+    }
+
+    private List<IntegratedRmvStationEntity> findRmvStationByCityName(String cityName) {
+        if (integratedRmvStations == null) {
+            integratedRmvStations = integratedRmvStationRepository.findAll();
+        }
+        return integratedRmvStations.stream()
+                .filter(rmvStation -> rmvStation.getCityName().equals(cityName))
+                .collect(Collectors.toList());
     }
 
     private void markBestTransferOption(List<IntegratedTransferOptionEntity> transferOptions) {
