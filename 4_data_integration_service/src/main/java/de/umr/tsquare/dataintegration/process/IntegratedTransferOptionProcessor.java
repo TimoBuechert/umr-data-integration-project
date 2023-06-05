@@ -10,7 +10,6 @@ import org.springframework.batch.item.ItemProcessor;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static de.umr.tsquare.dataintegration.util.StringUtil.*;
@@ -33,6 +32,7 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
 
     @Override
     public List<IntegratedTransferOptionEntity> process(final IntegratedDbStationEntity dbStation) {
+        System.out.println("done");
         final List<IntegratedRmvStationEntity> possibleRmvStations =
                 findRmvStationByCityName(dbStation.getCityName());
 
@@ -49,9 +49,6 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
     private List<IntegratedRmvStationEntity> findRmvStationByCityName(String cityName) {
         if (integratedRmvStations == null) {
             integratedRmvStations = integratedRmvStationRepository.findAll();
-        }
-        if (Objects.equals(cityName, "Frankfurt")) {
-            String dummy = "Frankfurt";
         }
         List<IntegratedRmvStationEntity> resultList = integratedRmvStations.stream()
                 .filter(rmvStation -> rmvStation.getCityName().equals(cityName))

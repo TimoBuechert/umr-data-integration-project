@@ -13,6 +13,10 @@ public class StringUtil {
                 calculateLevenshteinDistance(
                         appendStationsuffix(removeCharsBetweenBrackets(dbStation), true).toLowerCase(),
                         removeCharsBetweenBrackets(rmvStation).toLowerCase()
+                ),
+                calculateLevenshteinDistance(
+                        removeCharsBetweenBrackets(dbStation).toLowerCase(),
+                        removeCharsBetweenBrackets(rmvStation).toLowerCase()
                 )
         );
     }
