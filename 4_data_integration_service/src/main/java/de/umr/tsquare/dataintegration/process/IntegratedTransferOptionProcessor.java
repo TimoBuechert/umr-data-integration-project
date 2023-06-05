@@ -1,7 +1,6 @@
 package de.umr.tsquare.dataintegration.process;
 
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
-import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationRepository;
 import de.umr.tsquare.dataintegration.persistence.integration.transferoption.IntegratedTransferOptionEntity;
@@ -11,10 +10,10 @@ import org.springframework.batch.item.ItemProcessor;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static de.umr.tsquare.dataintegration.util.StringUtil.calculateLevenshteinStationDistance;
-import static de.umr.tsquare.dataintegration.util.StringUtil.removeCharsBetweenBrackets;
+import static de.umr.tsquare.dataintegration.util.StringUtil.*;
 
 @RequiredArgsConstructor
 public class IntegratedTransferOptionProcessor implements ItemProcessor<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>> {
@@ -24,7 +23,11 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
 
     private final int equalityDistanceThresholdInMeters;
 
-    private final int levenshteinDistanceThreshold;
+    private final int equalityLevenshteinDistanceThreshold;
+
+    private final int equalityLevenshteinDistanceThresholdForCityName;
+
+    private final int prefixLength;
 
     private List<IntegratedRmvStationEntity> integratedRmvStations;
 
@@ -47,9 +50,42 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
         if (integratedRmvStations == null) {
             integratedRmvStations = integratedRmvStationRepository.findAll();
         }
-        return integratedRmvStations.stream()
+        if (Objects.equals(cityName, "Frankfurt")) {
+            String dummy = "Frankfurt";
+        }
+        List<IntegratedRmvStationEntity> resultList = integratedRmvStations.stream()
                 .filter(rmvStation -> rmvStation.getCityName().equals(cityName))
                 .collect(Collectors.toList());
+        if (resultList.isEmpty()) {
+            Comparator<IntegratedRmvStationEntity> comparator =
+                    Comparator.comparing(rmvStation ->
+                            calculateLevenshteinDistance(
+                                    cityName,
+                                    rmvStation.getCityName(),
+                                    equalityLevenshteinDistanceThresholdForCityName + 1));
+            int length = cityName.length();
+            int prefixLength = Integer.min(length, this.prefixLength);
+            String mostCommonCity = integratedRmvStations.stream()
+                    .filter(rmvStation -> rmvStation.getCityName().startsWith(cityName.substring(0, prefixLength)))
+                    .filter(rmvStation ->
+                            rmvStation.getCityName().length()
+                                    <= length + equalityLevenshteinDistanceThresholdForCityName)
+                    .filter(rmvStation ->
+                            rmvStation.getCityName().length()
+                                    >= length - equalityLevenshteinDistanceThresholdForCityName)
+                    .distinct()
+                    .min(comparator)
+                    .map(IntegratedRmvStationEntity::getCityName)
+                    .orElse(null);
+            if (mostCommonCity != null &&
+                    calculateLevenshteinDistance(mostCommonCity, cityName)
+                            < equalityLevenshteinDistanceThresholdForCityName) {
+                resultList = integratedRmvStations.stream()
+                        .filter(rmvStation -> mostCommonCity.equals(rmvStation.getCityName()))
+                        .collect(Collectors.toList());
+            }
+        }
+        return resultList;
     }
 
     private void markBestTransferOption(List<IntegratedTransferOptionEntity> transferOptions) {
@@ -62,10 +98,10 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
         transferOptions.stream()
                 .filter(this::isEqualStationTransferCandidate)
                 .min(Comparator.comparing(it ->
-                    calculateLevenshteinStationDistance(
-                            it.getDbStation().getStationName(),
-                            it.getRmvStation().getStationNameLong()
-                    )
+                        calculateLevenshteinStationDistance(
+                                it.getDbStation().getStationName(),
+                                it.getRmvStation().getStationNameLong()
+                        )
                 ))
                 .ifPresent(it -> it.setIdenticalStations(true));
     }
@@ -75,7 +111,7 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
                 calculateLevenshteinStationDistance(
                         removeCharsBetweenBrackets(transferOption.getDbStation().getStationName()),
                         removeCharsBetweenBrackets(transferOption.getRmvStation().getStationNameLong())
-                ) < levenshteinDistanceThreshold);
+                ) < equalityLevenshteinDistanceThreshold);
     }
 
     private static double getDistanceInMeters(IntegratedDbStationEntity dbStation, IntegratedRmvStationEntity rmvStation) {

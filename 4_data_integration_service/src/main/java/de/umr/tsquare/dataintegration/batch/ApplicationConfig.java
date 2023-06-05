@@ -20,4 +20,9 @@ public class ApplicationConfig {
     @Value("${integration.equality.threshold.levenshtein}")
     private int equalityLevenshteinDistanceThreshold;
 
+    @Value("${integration.equality.threshold.levenshtein.cityname}")
+    private int equalityLevenshteinDistanceThresholdForCityName;
+
+    @Value("${integration.equality.prefixlength.cityname}")
+    private int prefixLength;
 }
