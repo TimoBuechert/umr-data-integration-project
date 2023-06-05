@@ -32,7 +32,6 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
 
     @Override
     public List<IntegratedTransferOptionEntity> process(final IntegratedDbStationEntity dbStation) {
-        System.out.println("done");
         final List<IntegratedRmvStationEntity> possibleRmvStations =
                 findRmvStationByCityName(dbStation.getCityName());
 
@@ -100,7 +99,10 @@ public class IntegratedTransferOptionProcessor implements ItemProcessor<Integrat
                                 it.getRmvStation().getStationNameLong()
                         )
                 ))
-                .ifPresent(it -> it.setIdenticalStations(true));
+                .ifPresent(it -> {
+                    it.setIdenticalStations(true);
+                    it.setBestTransferOption(true);
+                });
     }
 
     private boolean isEqualStationTransferCandidate(IntegratedTransferOptionEntity transferOption) {
