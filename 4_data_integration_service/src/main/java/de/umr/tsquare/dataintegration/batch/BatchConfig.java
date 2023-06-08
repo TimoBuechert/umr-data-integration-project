@@ -66,19 +66,25 @@ public class BatchConfig {
 
     private final IntegratedTransferOptionWriter integratedTransferOptionWriter;
 
+    private final IntegratedDbStationProcessor integratedDbStationProcessor;
+
+    private final IntegratedRmvStationProcessor integratedRmvStationProcessor;
+
     @Bean
-    public Job importData(final JobRepository jobRepository, final JobCompletionNotificationListener listener) {
+    public Job process(final JobRepository jobRepository,
+                       final JobCompletionNotificationListener listener) {
         return new JobBuilder("importDataJob", jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
                 .start(splitImportFlow())
                 .next(splitStageFlow())
-                .next(createTransferOptionFlow())
+                .next(transferOptionFlow())
                 .end()
                 .build();
     }
+
     @Bean
-    public Flow createTransferOptionFlow() {
+    public Flow transferOptionFlow() {
         return new FlowBuilder<SimpleFlow>("createTransferOptionFlow")
                 .start(new StepBuilder("createTransferOptionStep", jobRepository)
                         .<IntegratedDbStationEntity, List<IntegratedTransferOptionEntity>>chunk(config.getChunkSize(), transactionManager)
@@ -138,7 +144,7 @@ public class BatchConfig {
         return new StepBuilder("integrateDbStep", jobRepository)
                 .<DbStationEntity, IntegratedDbStationEntity>chunk(config.getChunkSize(), transactionManager)
                 .reader(readerConfig.stagedDbReader(dbStationRepository))
-                .processor(integratedDbStationProcessor())
+                .processor(integratedDbStationProcessor)
                 .writer(integratedDbStationWriter)
                 .build();
     }
@@ -148,7 +154,7 @@ public class BatchConfig {
         return new StepBuilder("integrateRmvStep", jobRepository)
                 .<RmvStationEntity, IntegratedRmvStationEntity>chunk(config.getChunkSize(), transactionManager)
                 .reader(readerConfig.stagedRmvReader(rmvStationRepository))
-                .processor(integratedRmvStationProcessor())
+                .processor(integratedRmvStationProcessor)
                 .writer(integratedRmvStationWriter)
                 .build();
     }
@@ -156,16 +162,6 @@ public class BatchConfig {
     @Bean
     public TaskExecutor taskExecutor() {
         return new SimpleAsyncTaskExecutor("spring_batch");
-    }
-
-    @Bean
-    public ItemProcessor<DbStationEntity, IntegratedDbStationEntity> integratedDbStationProcessor() {
-        return new IntegratedDbStationProcessor();
-    }
-
-    @Bean
-    public ItemProcessor<RmvStationEntity, IntegratedRmvStationEntity> integratedRmvStationProcessor() {
-        return new IntegratedRmvStationProcessor();
     }
 
     @Bean

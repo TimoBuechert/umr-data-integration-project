@@ -3,11 +3,13 @@ package de.umr.tsquare.dataintegration.process;
 import de.umr.tsquare.dataintegration.persistence.integration.dbstation.IntegratedDbStationEntity;
 import de.umr.tsquare.dataintegration.persistence.preparation.dbstation.DbStationEntity;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 
 import static de.umr.tsquare.dataintegration.util.NumberUtil.parseDouble;
 
+@Service
 public class IntegratedDbStationProcessor implements ItemProcessor<DbStationEntity, IntegratedDbStationEntity> {
     @Override
     public IntegratedDbStationEntity process(final DbStationEntity dbStationEntity) throws ParseException {

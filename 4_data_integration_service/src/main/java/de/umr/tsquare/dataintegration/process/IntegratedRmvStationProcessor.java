@@ -3,11 +3,13 @@ package de.umr.tsquare.dataintegration.process;
 import de.umr.tsquare.dataintegration.persistence.integration.rmvstation.IntegratedRmvStationEntity;
 import de.umr.tsquare.dataintegration.persistence.preparation.rmvstation.RmvStationEntity;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 
 import static de.umr.tsquare.dataintegration.util.NumberUtil.parseDouble;
 
+@Service
 public class IntegratedRmvStationProcessor implements ItemProcessor<RmvStationEntity, IntegratedRmvStationEntity> {
     @Override
     public IntegratedRmvStationEntity process(final RmvStationEntity rmvStationEntity) throws ParseException {
