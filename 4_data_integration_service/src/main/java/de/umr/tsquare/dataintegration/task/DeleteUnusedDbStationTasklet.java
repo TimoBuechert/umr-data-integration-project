@@ -22,9 +22,9 @@ import java.util.List;
 @AllArgsConstructor
 public class DeleteUnusedDbStationTasklet implements Tasklet {
 
-    IntegratedDbStationRepository integratedDbStationRepository;
+    final IntegratedDbStationRepository integratedDbStationRepository;
 
-    IntegratedTransferOptionRepository integratedTransferOptionRepository;
+    final IntegratedTransferOptionRepository integratedTransferOptionRepository;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {

@@ -19,6 +19,7 @@ import de.umr.tsquare.dataintegration.process.IntegratedRmvStationProcessor;
 import de.umr.tsquare.dataintegration.process.IntegratedTransferOptionProcessor;
 import de.umr.tsquare.dataintegration.task.DeleteUnusedDbStationTasklet;
 import de.umr.tsquare.dataintegration.task.DeleteUnusedRmvStationTasklet;
+import de.umr.tsquare.dataintegration.task.UnifyCityNamesTasklet;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -76,6 +77,8 @@ public class BatchConfig {
 
     private final DeleteUnusedRmvStationTasklet deleteUnusedRmvStationTasklet;
 
+    private final UnifyCityNamesTasklet unifyCityNamesTasklet;
+
     @Bean
     public Job process(final JobRepository jobRepository,
                        final JobCompletionNotificationListener listener) {
@@ -98,6 +101,9 @@ public class BatchConfig {
                         .build())
                 .next(new StepBuilder("deleteUnusedRmvStationStep", jobRepository)
                         .tasklet(deleteUnusedRmvStationTasklet, transactionManager)
+                        .build())
+                .next(new StepBuilder("unifyCityNamesStep", jobRepository)
+                        .tasklet(unifyCityNamesTasklet, transactionManager)
                         .build())
                 .build();
     }

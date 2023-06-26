@@ -22,9 +22,9 @@ import java.util.List;
 @AllArgsConstructor
 public class DeleteUnusedRmvStationTasklet implements Tasklet {
 
-    IntegratedRmvStationRepository integratedRmvStationRepository;
+    final IntegratedRmvStationRepository integratedRmvStationRepository;
 
-    IntegratedTransferOptionRepository integratedTransferOptionRepository;
+    final IntegratedTransferOptionRepository integratedTransferOptionRepository;
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
