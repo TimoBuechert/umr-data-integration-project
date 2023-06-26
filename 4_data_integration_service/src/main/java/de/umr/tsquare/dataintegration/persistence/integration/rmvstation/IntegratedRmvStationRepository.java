@@ -10,4 +10,7 @@ public interface IntegratedRmvStationRepository extends JpaRepository<Integrated
 
     List<IntegratedRmvStationEntity> findByCityName(String cityName);
 
+    List<IntegratedRmvStationEntity> deleteByStationIdNotIn(List<String> stationIdList);
+
+
 }

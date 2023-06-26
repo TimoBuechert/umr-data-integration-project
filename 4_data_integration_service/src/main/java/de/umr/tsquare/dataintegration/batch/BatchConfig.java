@@ -17,6 +17,8 @@ import de.umr.tsquare.dataintegration.persistence.preparation.rmvstation.RmvStat
 import de.umr.tsquare.dataintegration.process.IntegratedDbStationProcessor;
 import de.umr.tsquare.dataintegration.process.IntegratedRmvStationProcessor;
 import de.umr.tsquare.dataintegration.process.IntegratedTransferOptionProcessor;
+import de.umr.tsquare.dataintegration.task.DeleteUnusedDbStationTasklet;
+import de.umr.tsquare.dataintegration.task.DeleteUnusedRmvStationTasklet;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -70,6 +72,10 @@ public class BatchConfig {
 
     private final IntegratedRmvStationProcessor integratedRmvStationProcessor;
 
+    private final DeleteUnusedDbStationTasklet deleteUnusedDbStationTasklet;
+
+    private final DeleteUnusedRmvStationTasklet deleteUnusedRmvStationTasklet;
+
     @Bean
     public Job process(final JobRepository jobRepository,
                        final JobCompletionNotificationListener listener) {
@@ -79,7 +85,20 @@ public class BatchConfig {
                 .start(splitImportFlow())
                 .next(splitStageFlow())
                 .next(transferOptionFlow())
+                .next(cleaningFlow())
                 .end()
+                .build();
+    }
+
+    @Bean
+    public Flow cleaningFlow() {
+        return new FlowBuilder<SimpleFlow>("cleaningFlow")
+                .start(new StepBuilder("deleteUnusedDbStationsStep", jobRepository)
+                        .tasklet(deleteUnusedDbStationTasklet, transactionManager)
+                        .build())
+                .next(new StepBuilder("deleteUnusedRmvStationStep", jobRepository)
+                        .tasklet(deleteUnusedRmvStationTasklet, transactionManager)
+                        .build())
                 .build();
     }
 
